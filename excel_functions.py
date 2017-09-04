@@ -1,10 +1,12 @@
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import NamedStyle, Font
-import re
+import re, multiple_repl as mp
 
 cols = ('Название', 'ФИО Руководителя', 'Контакты', 'Месяц', 'Адрес', 'ИНН')
 letters = ('A', 'B', 'C', 'D', 'E', 'F')
 widths = (35, 32, 45, 10, 34, 11)
+repls = {'(.*ТСЖ)|(.*Товарищество со+бственников жилья)' : 'ТСЖ',
+         '(.*ЖСК)|(.*Жилищно-строительный ко+п+ератив)' : 'ЖСК'}
 
 def excel_parsing(first, last, path, objects):
     #columns selecting
@@ -18,8 +20,7 @@ def excel_parsing(first, last, path, objects):
     #duplicats checking by name
     names = []
     for number in range(first, last):
-        name = re.sub('(.*ТСЖ)|(.*Товарищество со+бственников жилья)', 'ТСЖ', ws[table_name + str(number)].value)
-        name = re.sub('(.*ЖСК)|(.*Жилищно-строительный ко+п+ератив)', 'ЖСК', name)
+        name = mp.multiple_repl(repls, ws[table_name + str(number)].value)
         if re.findall('(ТСЖ)|(ЖСК)', name) and not name in names:
             names.append(name)
             objects.append({cols[0] : name,
